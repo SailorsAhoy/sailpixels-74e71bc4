@@ -3,10 +3,22 @@ const Profile = () => {
   return (
     <div className="max-w-md mx-auto p-4">
       <div className="flex items-center space-x-4 mb-6">
-        <div className="w-20 h-20 bg-gray-300 rounded-full"></div>
+        <img 
+          src="https://sailorsahoy.com/icon_whitecircle.png" 
+          alt="SailorsAhoy Avatar"
+          className="w-20 h-20 rounded-full object-cover"
+        />
         <div>
-          <h1 className="text-xl font-semibold">sailor_user</h1>
-          <p className="text-gray-600">Sailing enthusiast</p>
+          <h1 className="text-xl font-semibold">SailorsAhoy</h1>
+          <p className="text-gray-600">The platform for sailors and sailing enthusiasts</p>
+          <a 
+            href="https://sailorsahoy.com" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-blue-500 text-sm hover:underline"
+          >
+            sailorsahoy.com
+          </a>
         </div>
       </div>
       
