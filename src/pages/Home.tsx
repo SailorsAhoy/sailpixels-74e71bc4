@@ -29,11 +29,17 @@ const Home = () => {
         
         Papa.parse(csvText, {
           header: true,
+          skipEmptyLines: true,
+          transformHeader: (h) => h.trim(),
           complete: (results) => {
             const allPosts = results.data as PostData[];
             const validPosts = allPosts.filter(post => post.id && post.id.trim() !== '');
-            // Sort by date chronologically (newest first)
-            validPosts.sort((a, b) => new Date(b.post_date).getTime() - new Date(a.post_date).getTime());
+            // Sort by date chronologically (newest first) - CSV uses DD/MM/YYYY
+            const parseDMY = (d: string) => {
+              const [dd, mm, yyyy] = d.split('/');
+              return new Date(Number(yyyy), Number(mm) - 1, Number(dd)).getTime();
+            };
+            validPosts.sort((a, b) => parseDMY(b.post_date) - parseDMY(a.post_date));
             setPosts(validPosts);
             setLoading(false);
           },

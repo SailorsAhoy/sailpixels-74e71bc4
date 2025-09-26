@@ -31,6 +31,8 @@ const Search = () => {
         
         Papa.parse(csvText, {
           header: true,
+          skipEmptyLines: true,
+          transformHeader: (h) => h.trim(),
           complete: (results) => {
             const allPosts = results.data as PostData[];
             const validPosts = allPosts.filter(post => post.id && post.id.trim() !== '');
