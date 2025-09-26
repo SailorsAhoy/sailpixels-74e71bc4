@@ -15,7 +15,14 @@ const Profile = () => {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 mb-1">SailorsAhoy</h1>
         <p className="text-gray-600 mb-2">The platform for sailors and sailing enthusiasts</p>
-        <p className="text-blue-500 text-sm">sailorsahoy.com</p>
+        <a 
+          href="https://sailorsahoy.com" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-blue-500 text-sm hover:underline"
+        >
+          sailorsahoy.com
+        </a>
       </div>
 
       {/* Stats */}
@@ -37,12 +44,15 @@ const Profile = () => {
       {/* Gallery Grid */}
       <div className="grid grid-cols-3 gap-1">
         {galleryImages.map((num) => (
-          <div key={num} className="aspect-square bg-gray-200 rounded-lg overflow-hidden">
+          <div key={num} className="aspect-square overflow-hidden">
             <img
               src={`https://sailorsahoy.com/pixel/img/${num}.jpg`}
               alt={`Gallery ${num}`}
               className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
               loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = 'https://via.placeholder.com/300x300/e5e7eb/9ca3af?text=Image';
+              }}
             />
           </div>
         ))}
