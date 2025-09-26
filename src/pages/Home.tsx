@@ -1,61 +1,102 @@
 
 import { Heart, Send, Eye, MessageCircle, MapPin, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import Papa from 'papaparse';
+
+interface PostData {
+  id: string;
+  post_date: string;
+  post_title: string;
+  post_description: string;
+  post_user: string;
+  post_user_id: string;
+  post_avatar: string;
+  post_image_url: string;
+  post_link: string;
+}
 
 const Home = () => {
-  const images = Array.from({ length: 10 }, (_, i) => i + 1);
-  
-  const postDescriptions = [
-    "Perfect sunrise sail this morning! Nothing beats the serenity of early waters ⛵",
-    "Caught some amazing wind today - 15 knots of pure sailing bliss! 🌊",
-    "Marina life at its finest. Love the community here! 🛥️",
-    "Dolphin encounter during our afternoon cruise! They followed us for miles 🐬",
-    "Racing prep day - tuning the rigging for next week's regatta ⚡",
-    "Sunset anchor spot discovered! This hidden cove is absolutely magical ✨",
-    "Learning knots with the crew - sailor skills never get old! 🪢",
-    "Storm clouds rolling in but we made it to port safely ⛈️",
-    "Fresh catch of the day! Nothing like fishing from your own boat 🎣",
-    "Full moon night sail - the water looked like liquid silver 🌙"
-  ];
+  const [posts, setPosts] = useState<PostData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await fetch('https://sailorsahoy.com/sailpixels/data/posts.csv');
+        const csvText = await response.text();
+        
+        Papa.parse(csvText, {
+          header: true,
+          complete: (results) => {
+            setPosts(results.data as PostData[]);
+            setLoading(false);
+          },
+          error: (error) => {
+            console.error('Error parsing CSV:', error);
+            setLoading(false);
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
 
   const getViewCount = (index: number) => {
     const counts = [875, 1200, 456, 23400, 987, 15600, 234, 45200, 678, 12300];
-    const count = counts[index];
+    const count = counts[index % counts.length];
     return count >= 1000 ? `${(count / 1000).toFixed(1)}K` : count.toString();
   };
 
   const getLikeCount = (index: number) => {
     const counts = [92, 156, 43, 2100, 87, 1800, 34, 3200, 67, 890];
-    const count = counts[index];
+    const count = counts[index % counts.length];
     return count >= 1000 ? `${(count / 1000).toFixed(1)}K` : count.toString();
   };
 
-  const getDates = (index: number) => {
-    const dates = [
-      "15/12/24", "14/12/24", "13/12/24", "12/12/24", "11/12/24",
-      "10/12/24", "09/12/24", "08/12/24", "07/12/24", "06/12/24"
-    ];
-    return dates[index];
-  };
+  if (loading) {
+    return (
+      <div className="max-w-md mx-auto p-4">
+        <div className="text-center">Loading posts...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto">
       <div className="space-y-6 p-4">
-        {images.map((num, index) => (
-          <div key={num} className="bg-white rounded-lg shadow-sm border border-gray-200">
+        {posts.map((post, index) => (
+          <div key={post.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center p-3 border-b border-gray-100">
               <img 
-                src="https://sailorsahoy.com/icon_whitecircle.png" 
-                alt="SailorsAhoy"
+                src={post.post_avatar || "https://sailorsahoy.com/icon_whitecircle.png"} 
+                alt={post.post_user}
                 className="w-8 h-8 rounded-full object-cover mr-3"
               />
-              <span className="font-medium text-sm">SailorsAhoy</span>
+              <span className="font-medium text-sm">{post.post_user}</span>
             </div>
-            <img
-              src={`https://sailorsahoy.com/pixel/img/${num}.jpg`}
-              alt={`Post ${num}`}
-              className="w-full aspect-square object-cover"
-              loading="lazy"
-            />
+            
+            {post.post_link ? (
+              <a href={post.post_link} target="_blank" rel="noopener noreferrer">
+                <img
+                  src={post.post_image_url}
+                  alt={post.post_title}
+                  className="w-full aspect-square object-cover cursor-pointer hover:opacity-95 transition-opacity"
+                  loading="lazy"
+                />
+              </a>
+            ) : (
+              <img
+                src={post.post_image_url}
+                alt={post.post_title}
+                className="w-full aspect-square object-cover"
+                loading="lazy"
+              />
+            )}
+            
             <div className="p-3">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center space-x-4">
@@ -64,7 +105,7 @@ const Home = () => {
                 </div>
                 <div className="flex items-center text-xs text-gray-500">
                   <Calendar className="w-3 h-3 mr-1" />
-                  {getDates(index)}
+                  {post.post_date}
                 </div>
               </div>
               
@@ -87,7 +128,10 @@ const Home = () => {
                 </div>
               </div>
               
-              <p className="text-sm text-gray-800">{postDescriptions[index]}</p>
+              {post.post_title && (
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">{post.post_title}</h3>
+              )}
+              <p className="text-sm text-gray-800">{post.post_description}</p>
             </div>
           </div>
         ))}
