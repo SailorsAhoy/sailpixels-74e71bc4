@@ -24,8 +24,8 @@ const Home = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        // Use test CSV for development, final CSV for production
-        const csvUrl = 'https://sailorsahoy.com/sailpixels/posts_test.csv';
+        // Use local CSV file
+        const csvUrl = '/posts_test.csv';
         const response = await fetch(csvUrl);
         const csvText = await response.text();
         
