@@ -44,14 +44,25 @@ const Profile = () => {
       {/* Gallery Grid */}
       <div className="grid grid-cols-3 gap-1">
         {galleryImages.map((num) => (
-          <div key={num} className="aspect-square overflow-hidden">
+          <div key={num} className="aspect-square overflow-hidden bg-gray-200 flex items-center justify-center">
             <img
               src={`https://sailorsahoy.com/pixel/img/${num}.jpg`}
               alt={`Gallery ${num}`}
               className="w-full h-full object-cover cursor-pointer hover:opacity-80 transition-opacity"
               loading="lazy"
               onError={(e) => {
-                e.currentTarget.src = 'https://via.placeholder.com/300x300/e5e7eb/9ca3af?text=Image';
+                console.log(`Failed to load image ${num}`);
+                e.currentTarget.style.display = 'none';
+                const parent = e.currentTarget.parentElement;
+                if (parent && !parent.querySelector('.fallback-text')) {
+                  const fallbackText = document.createElement('div');
+                  fallbackText.className = 'fallback-text text-gray-500 text-xs text-center';
+                  fallbackText.textContent = `Gallery ${num}`;
+                  parent.appendChild(fallbackText);
+                }
+              }}
+              onLoad={() => {
+                console.log(`Successfully loaded image ${num}`);
               }}
             />
           </div>
