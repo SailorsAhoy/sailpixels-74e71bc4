@@ -9,6 +9,7 @@ import Profile from "./pages/Profile";
 import Search from "./pages/Search";
 import NewPost from "./pages/NewPost";
 import Messages from "./pages/Messages";
+import Post from "./pages/Post";
 import Layout from "./components/Layout";
 import NotFound from "./pages/NotFound";
 
@@ -22,6 +23,7 @@ const App = () => (
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Index />} />
+          <Route path="/post/:id" element={<Post />} />
           <Route path="/profile" element={<Layout><Profile /></Layout>} />
           <Route path="/search" element={<Layout><Search /></Layout>} />
           <Route path="/new-post" element={<Layout><NewPost /></Layout>} />
