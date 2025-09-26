@@ -22,6 +22,7 @@ const Post = () => {
   const navigate = useNavigate();
   const [post, setPost] = useState<PostData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -56,10 +57,6 @@ const Post = () => {
     }
   }, [id]);
 
-  const handleBack = () => {
-    navigate(-1);
-  };
-
   const handleOpenLink = () => {
     if (post?.post_link) {
       window.open(post.post_link, '_blank');
@@ -80,10 +77,6 @@ const Post = () => {
     return (
       <div className="min-h-screen bg-background p-4">
         <div className="max-w-2xl mx-auto">
-          <Button variant="ghost" onClick={handleBack} className="mb-4">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
           <div className="text-center">Post not found</div>
         </div>
       </div>
@@ -91,22 +84,8 @@ const Post = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       <div className="max-w-2xl mx-auto p-4">
-        {/* Header with back button */}
-        <div className="flex items-center justify-between mb-6">
-          <Button variant="ghost" onClick={handleBack}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-          {post.post_link && (
-            <Button variant="outline" onClick={handleOpenLink}>
-              <ExternalLink className="w-4 h-4 mr-2" />
-              View Link
-            </Button>
-          )}
-        </div>
-
         {/* Post content */}
         <article className="space-y-6">
           {/* User info and date */}
@@ -145,9 +124,19 @@ const Post = () => {
           {/* Post description */}
           {post.post_description && (
             <div className="prose prose-sm max-w-none">
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap">
+              <p className={`text-foreground leading-relaxed whitespace-pre-wrap ${
+                !isDescriptionExpanded ? 'line-clamp-3' : ''
+              }`}>
                 {post.post_description}
               </p>
+              {!isDescriptionExpanded && post.post_description.length > 150 && (
+                <button
+                  onClick={() => setIsDescriptionExpanded(true)}
+                  className="text-primary text-sm font-medium hover:underline mt-2"
+                >
+                  Read more
+                </button>
+              )}
             </div>
           )}
 
