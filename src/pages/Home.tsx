@@ -1,6 +1,6 @@
 
-import { Heart, Send, Eye, MessageCircle, MapPin, Calendar } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 
 interface PostData {
@@ -18,13 +18,11 @@ interface PostData {
 const Home = () => {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(0);
-  const POSTS_PER_PAGE = 20;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        // Use local CSV file
         const csvUrl = '/posts_test.csv';
         const response = await fetch(csvUrl);
         const csvText = await response.text();
@@ -33,15 +31,10 @@ const Home = () => {
           header: true,
           complete: (results) => {
             const allPosts = results.data as PostData[];
-            // Filter out any empty rows
             const validPosts = allPosts.filter(post => post.id && post.id.trim() !== '');
-            
-            // Get posts for current page (20 posts starting from row 2 - after headers)
-            const startIndex = currentPage * POSTS_PER_PAGE;
-            const endIndex = startIndex + POSTS_PER_PAGE;
-            const pagePosts = validPosts.slice(startIndex, endIndex);
-            
-            setPosts(pagePosts);
+            // Sort by date chronologically (newest first)
+            validPosts.sort((a, b) => new Date(b.post_date).getTime() - new Date(a.post_date).getTime());
+            setPosts(validPosts);
             setLoading(false);
           },
           error: (error) => {
@@ -56,18 +49,10 @@ const Home = () => {
     };
 
     fetchPosts();
-  }, [currentPage]);
+  }, []);
 
-  const getViewCount = (index: number) => {
-    const counts = [875, 1200, 456, 23400, 987, 15600, 234, 45200, 678, 12300];
-    const count = counts[index % counts.length];
-    return count >= 1000 ? `${(count / 1000).toFixed(1)}K` : count.toString();
-  };
-
-  const getLikeCount = (index: number) => {
-    const counts = [92, 156, 43, 2100, 87, 1800, 34, 3200, 67, 890];
-    const count = counts[index % counts.length];
-    return count >= 1000 ? `${(count / 1000).toFixed(1)}K` : count.toString();
+  const handlePostClick = (postId: string) => {
+    navigate(`/post/${postId}`);
   };
 
   if (loading) {
@@ -79,72 +64,38 @@ const Home = () => {
   }
 
   return (
-    <div className="max-w-md mx-auto">
-      <div className="space-y-6 p-4">
-        {posts.map((post, index) => (
-          <div key={post.id} className="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center p-3 border-b border-gray-100">
+    <div className="max-w-md mx-auto p-4">
+      {/* 2-column grid layout */}
+      <div className="grid grid-cols-2 gap-3">
+        {posts.map((post) => (
+          <div 
+            key={post.id} 
+            className="cursor-pointer hover:opacity-95 transition-opacity"
+            onClick={() => handlePostClick(post.id)}
+          >
+            {/* User info on top */}
+            <div className="flex items-center mb-2">
               <img 
                 src={post.post_avatar || "https://sailorsahoy.com/icon_whitecircle.png"} 
                 alt={post.post_user}
-                className="w-8 h-8 rounded-full object-cover mr-3"
+                className="w-6 h-6 rounded-full object-cover mr-2"
               />
-              <span className="font-medium text-sm">{post.post_user}</span>
+              <span className="text-xs font-medium text-gray-700 truncate">{post.post_user}</span>
             </div>
             
-            {post.post_link ? (
-              <a href={post.post_link} target="_blank" rel="noopener noreferrer">
-                <img
-                  src={post.post_image_url}
-                  alt={post.post_title}
-                  className="w-full aspect-square object-cover cursor-pointer hover:opacity-95 transition-opacity"
-                  loading="lazy"
-                />
-              </a>
-            ) : (
+            {/* Title */}
+            <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
+              {post.post_title}
+            </h3>
+            
+            {/* Thumbnail image */}
+            <div className="aspect-square overflow-hidden rounded-lg">
               <img
                 src={post.post_image_url}
                 alt={post.post_title}
-                className="w-full aspect-square object-cover"
+                className="w-full h-full object-cover"
                 loading="lazy"
               />
-            )}
-            
-            <div className="p-3">
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center space-x-4">
-                  <Heart className="w-6 h-6 cursor-pointer hover:text-red-500 transition-colors" />
-                  <Send className="w-6 h-6 cursor-pointer hover:text-blue-500 transition-colors" />
-                </div>
-                <div className="flex items-center text-xs text-gray-500">
-                  <Calendar className="w-3 h-3 mr-1" />
-                  {post.post_date}
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-4 text-xs text-gray-500 mb-2">
-                <div className="flex items-center">
-                  <Eye className="w-3 h-3 mr-1" />
-                  {getViewCount(index)}
-                </div>
-                <div className="flex items-center">
-                  <Heart className="w-3 h-3 mr-1" />
-                  {getLikeCount(index)}
-                </div>
-                <div className="flex items-center">
-                  <MessageCircle className="w-3 h-3 mr-1" />
-                  {Math.floor(Math.random() * 50) + 1}
-                </div>
-                <div className="flex items-center">
-                  <MapPin className="w-3 h-3 mr-1" />
-                  Marina
-                </div>
-              </div>
-              
-              {post.post_title && (
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">{post.post_title}</h3>
-              )}
-              <p className="text-sm text-gray-800">{post.post_description}</p>
             </div>
           </div>
         ))}
