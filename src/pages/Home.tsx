@@ -51,43 +51,6 @@ const Home = () => {
         });
       } catch (error) {
         console.error('Error fetching posts:', error);
-        // Fallback to mock data due to CORS issues
-        const mockPosts: PostData[] = [
-          {
-            id: '1',
-            post_date: '25/09/2024',
-            post_title: 'Beautiful Sunset Sail',
-            post_description: 'Amazing sunset during our evening sail. The colors were absolutely stunning!',
-            post_user: 'SailorMike',
-            post_user_id: 'user1',
-            post_avatar: 'https://sailorsahoy.com/icon_whitecircle.png',
-            post_image_url: 'https://sailorsahoy.com/pixel/img/1.jpg',
-            post_link: 'https://sailorsahoy.com'
-          },
-          {
-            id: '2',
-            post_date: '24/09/2024', 
-            post_title: 'Marina Morning',
-            post_description: 'Early morning at the marina, getting ready for a day on the water.',
-            post_user: 'OceanLover',
-            post_user_id: 'user2',
-            post_avatar: 'https://sailorsahoy.com/icon_whitecircle.png',
-            post_image_url: 'https://sailorsahoy.com/pixel/img/2.jpg',
-            post_link: 'https://sailorsahoy.com'
-          },
-          {
-            id: '3',
-            post_date: '23/09/2024',
-            post_title: 'Weekend Regatta',
-            post_description: 'Participating in the local regatta this weekend. Great conditions for racing!',
-            post_user: 'SpeedSailor',
-            post_user_id: 'user3', 
-            post_avatar: 'https://sailorsahoy.com/icon_whitecircle.png',
-            post_image_url: 'https://sailorsahoy.com/pixel/img/3.jpg',
-            post_link: 'https://sailorsahoy.com'
-          }
-        ];
-        setPosts(mockPosts);
         setLoading(false);
       }
     };
