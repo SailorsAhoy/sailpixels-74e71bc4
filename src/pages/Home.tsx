@@ -18,17 +18,30 @@ interface PostData {
 const Home = () => {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
+  const POSTS_PER_PAGE = 20;
 
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const response = await fetch('https://sailorsahoy.com/sailpixels/data/posts.csv');
+        // Use test CSV for development, final CSV for production
+        const csvUrl = 'https://sailorsahoy.com/sailpixels/posts_test.csv';
+        const response = await fetch(csvUrl);
         const csvText = await response.text();
         
         Papa.parse(csvText, {
           header: true,
           complete: (results) => {
-            setPosts(results.data as PostData[]);
+            const allPosts = results.data as PostData[];
+            // Filter out any empty rows
+            const validPosts = allPosts.filter(post => post.id && post.id.trim() !== '');
+            
+            // Get posts for current page (20 posts starting from row 2 - after headers)
+            const startIndex = currentPage * POSTS_PER_PAGE;
+            const endIndex = startIndex + POSTS_PER_PAGE;
+            const pagePosts = validPosts.slice(startIndex, endIndex);
+            
+            setPosts(pagePosts);
             setLoading(false);
           },
           error: (error) => {
@@ -43,7 +56,7 @@ const Home = () => {
     };
 
     fetchPosts();
-  }, []);
+  }, [currentPage]);
 
   const getViewCount = (index: number) => {
     const counts = [875, 1200, 456, 23400, 987, 15600, 234, 45200, 678, 12300];
