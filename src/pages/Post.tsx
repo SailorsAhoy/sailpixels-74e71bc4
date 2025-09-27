@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ExternalLink, ChevronLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import Papa from 'papaparse';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -79,6 +79,11 @@ const Post = () => {
     touchStartX.current = e.touches[0].clientX;
   };
 
+  const navigateToPost = (targetId: string) => {
+    setIsDescriptionExpanded(false);
+    navigate(`/post/${targetId}`);
+  };
+
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (!post || allPosts.length === 0) return;
 
@@ -94,7 +99,7 @@ const Post = () => {
     if (deltaY < -minSwipeDistance && Math.abs(deltaX) < Math.abs(deltaY)) {
       const currentIndex = allPosts.findIndex(p => p.id === post.id);
       if (currentIndex > 0) {
-        navigate(`/post/${allPosts[currentIndex - 1].id}`);
+        navigateToPost(allPosts[currentIndex - 1].id);
       }
     }
     // Swipe left for next post by same user
@@ -102,7 +107,7 @@ const Post = () => {
       const userPosts = allPosts.filter(p => p.post_user_id === post.post_user_id);
       const currentIndex = userPosts.findIndex(p => p.id === post.id);
       if (currentIndex < userPosts.length - 1) {
-        navigate(`/post/${userPosts[currentIndex + 1].id}`);
+        navigateToPost(userPosts[currentIndex + 1].id);
       }
     }
     // Swipe right for previous post by same user
@@ -110,8 +115,34 @@ const Post = () => {
       const userPosts = allPosts.filter(p => p.post_user_id === post.post_user_id);
       const currentIndex = userPosts.findIndex(p => p.id === post.id);
       if (currentIndex > 0) {
-        navigate(`/post/${userPosts[currentIndex - 1].id}`);
+        navigateToPost(userPosts[currentIndex - 1].id);
       }
+    }
+  };
+
+  const handlePrevUserPost = () => {
+    if (!post || allPosts.length === 0) return;
+    const userPosts = allPosts.filter(p => p.post_user_id === post.post_user_id);
+    const currentIndex = userPosts.findIndex(p => p.id === post.id);
+    if (currentIndex > 0) {
+      navigateToPost(userPosts[currentIndex - 1].id);
+    }
+  };
+
+  const handleNextChronologicalPost = () => {
+    if (!post || allPosts.length === 0) return;
+    const currentIndex = allPosts.findIndex(p => p.id === post.id);
+    if (currentIndex > 0) {
+      navigateToPost(allPosts[currentIndex - 1].id);
+    }
+  };
+
+  const handleNextUserPost = () => {
+    if (!post || allPosts.length === 0) return;
+    const userPosts = allPosts.filter(p => p.post_user_id === post.post_user_id);
+    const currentIndex = userPosts.findIndex(p => p.id === post.id);
+    if (currentIndex < userPosts.length - 1) {
+      navigateToPost(userPosts[currentIndex + 1].id);
     }
   };
 
@@ -194,7 +225,7 @@ const Post = () => {
 
           {/* Link button at bottom */}
           {post.post_link && (
-            <div className="pt-4 border-t border-border">
+            <div className="pt-4 border-t border-border space-y-2">
               <Button 
                 variant="default" 
                 className="w-full" 
@@ -203,6 +234,37 @@ const Post = () => {
                 <ExternalLink className="w-4 h-4 mr-2" />
                 View Original Post
               </Button>
+              
+              {/* Navigation buttons */}
+              <div className="flex gap-2 pt-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex-1" 
+                  onClick={handlePrevUserPost}
+                >
+                  <ChevronLeft className="w-3 h-3 mr-1" />
+                  Prev
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex-1" 
+                  onClick={handleNextChronologicalPost}
+                >
+                  <ChevronDown className="w-3 h-3 mr-1" />
+                  Next
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex-1" 
+                  onClick={handleNextUserPost}
+                >
+                  <ChevronRight className="w-3 h-3 mr-1" />
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </article>
