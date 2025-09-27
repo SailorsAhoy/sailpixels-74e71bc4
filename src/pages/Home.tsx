@@ -76,7 +76,7 @@ const Home = () => {
         {posts.map((post) => (
           <div 
             key={post.id} 
-            className="cursor-pointer hover:opacity-95 transition-opacity"
+            className="cursor-pointer hover:opacity-95 transition-opacity bg-white rounded-lg p-3 shadow-sm shadow-gray-300/50"
             onClick={() => handlePostClick(post.id)}
           >
             {/* User info on top */}
