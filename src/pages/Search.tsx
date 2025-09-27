@@ -35,13 +35,17 @@ const Search = () => {
   const [posts, setPosts] = useState<PostData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filteredPosts, setFilteredPosts] = useState<PostData[]>([]);
+  const [displayedPosts, setDisplayedPosts] = useState<PostData[]>([]);
   const [loading, setLoading] = useState(true);
   const [suggestions, setSuggestions] = useState<PostData[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedSubcategory, setSelectedSubcategory] = useState<string>('');
+  const [loadedCount, setLoadedCount] = useState(15);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const navigate = useNavigate();
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const touchStartY = useRef<number>(0);
 
   // Sample categories and subcategories
   const categories = [
@@ -97,7 +101,9 @@ const Search = () => {
             setPosts(validPosts);
             // Show random thumbnails initially
             const shuffled = [...validPosts].sort(() => 0.5 - Math.random());
-            setFilteredPosts(shuffled.slice(0, 15));
+            setFilteredPosts(shuffled);
+            setDisplayedPosts(shuffled.slice(0, 15));
+            setLoadedCount(15);
             setLoading(false);
           },
           error: (error) => {
@@ -118,7 +124,9 @@ const Search = () => {
     if (searchTerm.trim() === '') {
       // Show random thumbnails when no search term
       const shuffled = [...posts].sort(() => 0.5 - Math.random());
-      setFilteredPosts(shuffled.slice(0, 15));
+      setFilteredPosts(shuffled);
+      setDisplayedPosts(shuffled.slice(0, 15));
+      setLoadedCount(15);
       setSuggestions([]);
       setShowSuggestions(false);
     } else {
@@ -129,6 +137,8 @@ const Search = () => {
         post.post_user.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredPosts(filtered);
+      setDisplayedPosts(filtered.slice(0, 15));
+      setLoadedCount(15);
 
       // Show suggestions after 3 characters
       if (searchTerm.length >= 3) {
@@ -158,14 +168,41 @@ const Search = () => {
     setTimeout(() => setShowSuggestions(false), 200);
   };
 
+  const loadMorePosts = () => {
+    if (isLoadingMore || loadedCount >= filteredPosts.length) return;
+    
+    setIsLoadingMore(true);
+    setTimeout(() => {
+      const nextCount = Math.min(loadedCount + 10, filteredPosts.length);
+      setDisplayedPosts(filteredPosts.slice(0, nextCount));
+      setLoadedCount(nextCount);
+      setIsLoadingMore(false);
+    }, 500); // Small delay to show loading state
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaY = touchStartY.current - touchEndY;
+    const minSwipeDistance = 100;
+
+    // Swipe down to load more
+    if (deltaY < -minSwipeDistance) {
+      loadMorePosts();
+    }
+  };
+
   const applyFilters = () => {
     // Filter logic based on category and subcategory will be implemented when real data is provided
     console.log('Applying filters:', { selectedCategory, selectedSubcategory });
   };
 
   if (loading) {
-    return (
-      <div className="max-w-md mx-auto p-4">
+  return (
+    <div className="max-w-md mx-auto p-4" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <div className="text-center">Loading...</div>
       </div>
     );
@@ -285,7 +322,7 @@ const Search = () => {
       </div>
       
       <div className="grid grid-cols-3 gap-1">
-        {filteredPosts.map((post) => (
+        {displayedPosts.map((post) => (
           <div 
             key={post.id} 
             className="aspect-square cursor-pointer hover:opacity-80 transition-opacity"
@@ -301,7 +338,21 @@ const Search = () => {
         ))}
       </div>
       
-      {searchTerm.trim() !== '' && filteredPosts.length === 0 && (
+      {/* Loading indicator */}
+      {isLoadingMore && (
+        <div className="text-center text-muted-foreground mt-4">
+          Loading more posts...
+        </div>
+      )}
+      
+      {/* Load more hint */}
+      {!isLoadingMore && loadedCount < filteredPosts.length && (
+        <div className="text-center text-muted-foreground mt-4 text-sm">
+          Swipe down to load {Math.min(10, filteredPosts.length - loadedCount)} more posts
+        </div>
+      )}
+      
+      {searchTerm.trim() !== '' && displayedPosts.length === 0 && (
         <div className="text-center text-muted-foreground mt-8">
           No posts found for "{searchTerm}"
         </div>
