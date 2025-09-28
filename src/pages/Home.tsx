@@ -107,9 +107,9 @@ const Home = () => {
                 <span className="text-xs font-medium text-gray-700 truncate">{post.post_user}</span>
               </div>
               
-              {/* Title */}
-              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 line-clamp-2 leading-tight">
-                {post.post_title}
+              {/* Title with fixed height for 2 lines */}
+              <h3 className="text-xs sm:text-sm font-semibold text-gray-900 mb-2 leading-tight h-8 sm:h-10 flex items-start">
+                <span className="line-clamp-2">{post.post_title}</span>
               </h3>
               
               {/* Thumbnail image with heart overlay */}

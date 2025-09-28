@@ -193,14 +193,70 @@ const Post = () => {
             {post.post_title}
           </h1>
 
-          {/* Post image */}
+          {/* Stats */}
+          <div className="flex items-center space-x-4 text-sm text-gray-600">
+            <div className="flex items-center space-x-1">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <span>{(() => {
+                const views = Math.floor(Math.random() * 50000) + 100;
+                if (views < 1000) return views.toString();
+                if (views < 1000000) return (views / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+                return (views / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+              })()}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+              </svg>
+              <span>{(() => {
+                const likes = Math.floor(Math.random() * 5000) + 10;
+                if (likes < 1000) return likes.toString();
+                if (likes < 1000000) return (likes / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+                return (likes / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+              })()}</span>
+            </div>
+            <div className="flex items-center space-x-1">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                <polyline points="16,6 12,2 8,6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
+              </svg>
+              <span>{(() => {
+                const shares = Math.floor(Math.random() * 500) + 1;
+                if (shares < 1000) return shares.toString();
+                if (shares < 1000000) return (shares / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+                return (shares / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+              })()}</span>
+            </div>
+          </div>
+
+          {/* Post image with heart overlay */}
           {post.post_image_url && (
-            <div className="rounded-lg overflow-hidden">
+            <div className="rounded-lg overflow-hidden relative">
               <img
                 src={post.post_image_url}
                 alt={post.post_title}
                 className="w-full h-auto object-cover"
               />
+              {/* Heart overlay */}
+              <div className="absolute top-3 right-3">
+                <svg 
+                  width="24" 
+                  height="24" 
+                  viewBox="0 0 24 24" 
+                  className="drop-shadow-sm"
+                >
+                  <path
+                    d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
+                    fill={Math.random() > 0.7 ? "#00e3eb" : "white"}
+                    stroke="black"
+                    strokeWidth="1"
+                  />
+                </svg>
+              </div>
             </div>
           )}
 
