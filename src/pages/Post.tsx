@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, ChevronLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import Papa from 'papaparse';
@@ -16,6 +16,26 @@ interface PostData {
   post_image_url: string;
   post_link: string;
 }
+
+// Simple throttle function outside component to avoid recreation
+const throttle = (func: Function, delay: number) => {
+  let timeoutId: NodeJS.Timeout;
+  let lastExecTime = 0;
+  return function (...args: any[]) {
+    const currentTime = Date.now();
+    
+    if (currentTime - lastExecTime > delay) {
+      func(...args);
+      lastExecTime = currentTime;
+    } else {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func(...args);
+        lastExecTime = Date.now();
+      }, delay - (currentTime - lastExecTime));
+    }
+  };
+};
 
 const Post = () => {
   const { id } = useParams<{ id: string }>();
@@ -80,7 +100,7 @@ const Post = () => {
     touchStartX.current = e.touches[0].clientX;
   };
 
-  const navigateToPost = (targetId: string) => {
+  const navigateToPost = useCallback((targetId: string) => {
     setIsDescriptionExpanded(false);
     setIsTransitioning(true);
     
@@ -92,7 +112,7 @@ const Post = () => {
       navigate(`/post/${targetId}`);
       setIsTransitioning(false);
     }, 300);
-  };
+  }, [navigate]);
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (!post || allPosts.length === 0) return;
@@ -185,6 +205,8 @@ const Post = () => {
 
   // Handle scroll navigation
   useEffect(() => {
+    if (!allPosts.length || !post) return;
+    
     let lastScrollY = window.scrollY;
     
     const handleScroll = () => {
@@ -215,26 +237,6 @@ const Post = () => {
     
     return () => window.removeEventListener('scroll', throttledScroll);
   }, [allPosts, post, navigateToPost]);
-
-  // Simple throttle function
-  const throttle = (func: Function, delay: number) => {
-    let timeoutId: NodeJS.Timeout;
-    let lastExecTime = 0;
-    return function (...args: any[]) {
-      const currentTime = Date.now();
-      
-      if (currentTime - lastExecTime > delay) {
-        func(...args);
-        lastExecTime = currentTime;
-      } else {
-        clearTimeout(timeoutId);
-        timeoutId = setTimeout(() => {
-          func(...args);
-          lastExecTime = Date.now();
-        }, delay - (currentTime - lastExecTime));
-      }
-    };
-  };
 
   return (
     <div className={`bg-background transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
