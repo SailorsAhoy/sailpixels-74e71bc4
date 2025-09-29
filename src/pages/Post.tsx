@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, ChevronLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import Papa from 'papaparse';
@@ -17,26 +17,6 @@ interface PostData {
   post_link: string;
 }
 
-// Simple throttle function outside component to avoid recreation
-const throttle = (func: Function, delay: number) => {
-  let timeoutId: NodeJS.Timeout;
-  let lastExecTime = 0;
-  return function (...args: any[]) {
-    const currentTime = Date.now();
-    
-    if (currentTime - lastExecTime > delay) {
-      func(...args);
-      lastExecTime = currentTime;
-    } else {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => {
-        func(...args);
-        lastExecTime = Date.now();
-      }, delay - (currentTime - lastExecTime));
-    }
-  };
-};
-
 const Post = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -46,7 +26,6 @@ const Post = () => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const touchStartY = useRef<number>(0);
   const touchStartX = useRef<number>(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -100,19 +79,10 @@ const Post = () => {
     touchStartX.current = e.touches[0].clientX;
   };
 
-  const navigateToPost = useCallback((targetId: string) => {
+  const navigateToPost = (targetId: string) => {
     setIsDescriptionExpanded(false);
-    setIsTransitioning(true);
-    
-    // Smooth scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
-    // Navigate after a short delay to allow scroll
-    setTimeout(() => {
-      navigate(`/post/${targetId}`);
-      setIsTransitioning(false);
-    }, 300);
-  }, [navigate]);
+    navigate(`/post/${targetId}`);
+  };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (!post || allPosts.length === 0) return;
@@ -125,15 +95,8 @@ const Post = () => {
     // Minimum swipe distance
     const minSwipeDistance = 50;
 
-    // Swipe up for next chronological post
-    if (deltaY > minSwipeDistance && Math.abs(deltaX) < Math.abs(deltaY)) {
-      const currentIndex = allPosts.findIndex(p => p.id === post.id);
-      if (currentIndex < allPosts.length - 1) {
-        navigateToPost(allPosts[currentIndex + 1].id);
-      }
-    }
-    // Swipe down for previous chronological post  
-    else if (deltaY < -minSwipeDistance && Math.abs(deltaX) < Math.abs(deltaY)) {
+    // Swipe down for next chronological post
+    if (deltaY < -minSwipeDistance && Math.abs(deltaX) < Math.abs(deltaY)) {
       const currentIndex = allPosts.findIndex(p => p.id === post.id);
       if (currentIndex > 0) {
         navigateToPost(allPosts[currentIndex - 1].id);
@@ -203,43 +166,8 @@ const Post = () => {
     );
   }
 
-  // Handle scroll navigation
-  useEffect(() => {
-    if (!allPosts.length || !post) return;
-    
-    let lastScrollY = window.scrollY;
-    
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const scrollDelta = currentScrollY - lastScrollY;
-      
-      // Only trigger on significant scroll
-      if (Math.abs(scrollDelta) > 100) {
-        if (scrollDelta > 0) {
-          // Scrolling down - next post
-          const currentIndex = allPosts.findIndex(p => p.id === post?.id);
-          if (currentIndex < allPosts.length - 1) {
-            navigateToPost(allPosts[currentIndex + 1].id);
-          }
-        } else {
-          // Scrolling up - previous post
-          const currentIndex = allPosts.findIndex(p => p.id === post?.id);
-          if (currentIndex > 0) {
-            navigateToPost(allPosts[currentIndex - 1].id);
-          }
-        }
-        lastScrollY = currentScrollY;
-      }
-    };
-    
-    const throttledScroll = throttle(handleScroll, 500);
-    window.addEventListener('scroll', throttledScroll);
-    
-    return () => window.removeEventListener('scroll', throttledScroll);
-  }, [allPosts, post, navigateToPost]);
-
   return (
-    <div className={`bg-background transition-opacity duration-300 ${isTransitioning ? 'opacity-50' : 'opacity-100'}`} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+    <div className="bg-background" onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div className="max-w-2xl mx-auto p-4">
         {/* Post content */}
         <article className="space-y-6">
