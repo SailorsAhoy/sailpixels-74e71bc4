@@ -138,29 +138,47 @@ const Home = () => {
                 </div>
               </div>
               
-              {/* Stats */}
-              <div className="flex items-center justify-between mt-2 text-xs">
-                <div className="flex items-center space-x-1 text-gray-600">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                  <span>{formatNumber(stats.views)}</span>
+              {/* Stats and View Post Button */}
+              <div className="flex items-center justify-between mt-2">
+                <div className="flex items-center space-x-3 text-xs text-gray-600">
+                  <div className="flex items-center space-x-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <span>{formatNumber(stats.views)}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    <span>{formatNumber(stats.likes)}</span>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                      <polyline points="16,6 12,2 8,6"/>
+                      <line x1="12" y1="2" x2="12" y2="15"/>
+                    </svg>
+                    <span>{formatNumber(stats.shares)}</span>
+                  </div>
                 </div>
-                <div className="flex items-center space-x-1 text-gray-600">
+                
+                {/* View Post Button */}
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/post/${post.id}`);
+                  }}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 text-xs rounded flex items-center space-x-1 transition-colors"
+                >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                    <polyline points="15,3 21,3 21,9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
                   </svg>
-                  <span>{formatNumber(stats.likes)}</span>
-                </div>
-                <div className="flex items-center space-x-1 text-gray-600">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-                    <polyline points="16,6 12,2 8,6"/>
-                    <line x1="12" y1="2" x2="12" y2="15"/>
-                  </svg>
-                  <span>{formatNumber(stats.shares)}</span>
-                </div>
+                  <span>view post</span>
+                </button>
               </div>
             </div>
           );
