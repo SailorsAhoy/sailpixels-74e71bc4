@@ -25,7 +25,7 @@ const Post = () => {
   const [loading, setLoading] = useState(true);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const touchStartY = useRef<number>(0);
-  const touchStartX = useRef<number>(0);
+  const scrollStartY = useRef<number>(0);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -76,7 +76,6 @@ const Post = () => {
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartY.current = e.touches[0].clientY;
-    touchStartX.current = e.touches[0].clientX;
   };
 
   const navigateToPost = (targetId: string) => {
@@ -88,63 +87,58 @@ const Post = () => {
     if (!post || allPosts.length === 0) return;
 
     const touchEndY = e.changedTouches[0].clientY;
-    const touchEndX = e.changedTouches[0].clientX;
     const deltaY = touchStartY.current - touchEndY;
-    const deltaX = touchStartX.current - touchEndX;
 
     // Minimum swipe distance
     const minSwipeDistance = 50;
 
-    // Swipe down for next chronological post
-    if (deltaY < -minSwipeDistance && Math.abs(deltaX) < Math.abs(deltaY)) {
+    // Swipe up for next chronological post
+    if (deltaY > minSwipeDistance) {
+      const currentIndex = allPosts.findIndex(p => p.id === post.id);
+      if (currentIndex < allPosts.length - 1) {
+        navigateToPost(allPosts[currentIndex + 1].id);
+      }
+    }
+    // Swipe down for previous post
+    else if (deltaY < -minSwipeDistance) {
       const currentIndex = allPosts.findIndex(p => p.id === post.id);
       if (currentIndex > 0) {
         navigateToPost(allPosts[currentIndex - 1].id);
       }
     }
-    // Swipe left for next post by same user
-    else if (deltaX > minSwipeDistance && Math.abs(deltaY) < Math.abs(deltaX)) {
-      const userPosts = allPosts.filter(p => p.post_user_id === post.post_user_id);
-      const currentIndex = userPosts.findIndex(p => p.id === post.id);
-      if (currentIndex < userPosts.length - 1) {
-        navigateToPost(userPosts[currentIndex + 1].id);
+  };
+
+  // Add scroll handling
+  useEffect(() => {
+    let lastScrollY = window.scrollY;
+    const handleScroll = () => {
+      if (!post || allPosts.length === 0) return;
+      
+      const currentScrollY = window.scrollY;
+      const scrollDelta = currentScrollY - lastScrollY;
+      
+      // Minimum scroll distance to trigger navigation
+      if (Math.abs(scrollDelta) > 100) {
+        if (scrollDelta > 0) {
+          // Scroll down - next post
+          const currentIndex = allPosts.findIndex(p => p.id === post.id);
+          if (currentIndex < allPosts.length - 1) {
+            navigateToPost(allPosts[currentIndex + 1].id);
+          }
+        } else {
+          // Scroll up - previous post
+          const currentIndex = allPosts.findIndex(p => p.id === post.id);
+          if (currentIndex > 0) {
+            navigateToPost(allPosts[currentIndex - 1].id);
+          }
+        }
+        lastScrollY = currentScrollY;
       }
-    }
-    // Swipe right for previous post by same user
-    else if (deltaX < -minSwipeDistance && Math.abs(deltaY) < Math.abs(deltaX)) {
-      const userPosts = allPosts.filter(p => p.post_user_id === post.post_user_id);
-      const currentIndex = userPosts.findIndex(p => p.id === post.id);
-      if (currentIndex > 0) {
-        navigateToPost(userPosts[currentIndex - 1].id);
-      }
-    }
-  };
+    };
 
-  const handlePrevUserPost = () => {
-    if (!post || allPosts.length === 0) return;
-    const userPosts = allPosts.filter(p => p.post_user_id === post.post_user_id);
-    const currentIndex = userPosts.findIndex(p => p.id === post.id);
-    if (currentIndex > 0) {
-      navigateToPost(userPosts[currentIndex - 1].id);
-    }
-  };
-
-  const handleNextChronologicalPost = () => {
-    if (!post || allPosts.length === 0) return;
-    const currentIndex = allPosts.findIndex(p => p.id === post.id);
-    if (currentIndex > 0) {
-      navigateToPost(allPosts[currentIndex - 1].id);
-    }
-  };
-
-  const handleNextUserPost = () => {
-    if (!post || allPosts.length === 0) return;
-    const userPosts = allPosts.filter(p => p.post_user_id === post.post_user_id);
-    const currentIndex = userPosts.findIndex(p => p.id === post.id);
-    if (currentIndex < userPosts.length - 1) {
-      navigateToPost(userPosts[currentIndex + 1].id);
-    }
-  };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [post, allPosts]);
 
   if (loading) {
     return (
@@ -193,44 +187,59 @@ const Post = () => {
             {post.post_title}
           </h1>
 
-          {/* Stats */}
-          <div className="flex items-center space-x-4 text-sm text-gray-600">
-            <div className="flex items-center space-x-1">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                <circle cx="12" cy="12" r="3"/>
-              </svg>
-              <span>{(() => {
-                const views = Math.floor(Math.random() * 50000) + 100;
-                if (views < 1000) return views.toString();
-                if (views < 1000000) return (views / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-                return (views / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
-              })()}</span>
+          {/* Stats and View Post button */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4 text-sm text-gray-600">
+              <div className="flex items-center space-x-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                  <circle cx="12" cy="12" r="3"/>
+                </svg>
+                <span>{(() => {
+                  const views = Math.floor(Math.random() * 50000) + 100;
+                  if (views < 1000) return views.toString();
+                  if (views < 1000000) return (views / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+                  return (views / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+                })()}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+                <span>{(() => {
+                  const likes = Math.floor(Math.random() * 5000) + 10;
+                  if (likes < 1000) return likes.toString();
+                  if (likes < 1000000) return (likes / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+                  return (likes / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+                })()}</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                  <polyline points="16,6 12,2 8,6"/>
+                  <line x1="12" y1="2" x2="12" y2="15"/>
+                </svg>
+                <span>{(() => {
+                  const shares = Math.floor(Math.random() * 500) + 1;
+                  if (shares < 1000) return shares.toString();
+                  if (shares < 1000000) return (shares / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+                  return (shares / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
+                })()}</span>
+              </div>
             </div>
-            <div className="flex items-center space-x-1">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-              </svg>
-              <span>{(() => {
-                const likes = Math.floor(Math.random() * 5000) + 10;
-                if (likes < 1000) return likes.toString();
-                if (likes < 1000000) return (likes / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-                return (likes / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
-              })()}</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-                <polyline points="16,6 12,2 8,6"/>
-                <line x1="12" y1="2" x2="12" y2="15"/>
-              </svg>
-              <span>{(() => {
-                const shares = Math.floor(Math.random() * 500) + 1;
-                if (shares < 1000) return shares.toString();
-                if (shares < 1000000) return (shares / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
-                return (shares / 1000000).toFixed(1).replace(/\.0$/, '') + 'm';
-              })()}</span>
-            </div>
+            
+            {/* View Post button */}
+            {post.post_link && (
+              <Button 
+                variant="default" 
+                size="sm"
+                className="text-sm bg-[#0066cc] hover:bg-[#0052a3] text-white" 
+                onClick={handleOpenLink}
+              >
+                <ExternalLink className="w-4 h-4 mr-1" />
+                View post
+              </Button>
+            )}
           </div>
 
           {/* Post image with heart overlay */}
@@ -279,50 +288,6 @@ const Post = () => {
             </div>
           )}
 
-          {/* Link button at bottom */}
-          {post.post_link && (
-            <div className="pt-4 border-t border-border space-y-2">
-              <Button 
-                variant="default" 
-                className="w-full" 
-                onClick={handleOpenLink}
-              >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                View Original Post
-              </Button>
-              
-              {/* Navigation buttons */}
-              <div className="flex gap-2 pt-2">
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="flex-1" 
-                  onClick={handlePrevUserPost}
-                >
-                  <ChevronLeft className="w-3 h-3 mr-1" />
-                  Prev
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="flex-1" 
-                  onClick={handleNextChronologicalPost}
-                >
-                  <ChevronDown className="w-3 h-3 mr-1" />
-                  Next
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="flex-1" 
-                  onClick={handleNextUserPost}
-                >
-                  <ChevronRight className="w-3 h-3 mr-1" />
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
         </article>
       </div>
     </div>
