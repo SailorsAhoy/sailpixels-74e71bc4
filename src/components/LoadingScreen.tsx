@@ -9,10 +9,28 @@ interface LoadingScreenProps {
 const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
   const [isVisible, setIsVisible] = useState(true);
 
-  const handleDemoClick = () => {
-    setIsVisible(false);
-    onLoadingComplete();
-  };
+  useEffect(() => {
+    // Auto-navigate after 3 seconds
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+      onLoadingComplete();
+    }, 3000);
+
+    // Navigate on scroll or touch
+    const handleInteraction = () => {
+      setIsVisible(false);
+      onLoadingComplete();
+    };
+
+    window.addEventListener('scroll', handleInteraction);
+    window.addEventListener('touchstart', handleInteraction);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('scroll', handleInteraction);
+      window.removeEventListener('touchstart', handleInteraction);
+    };
+  }, [onLoadingComplete]);
 
   if (!isVisible) return null;
 
@@ -32,12 +50,11 @@ const LoadingScreen = ({ onLoadingComplete }: LoadingScreenProps) => {
         
         <div className="flex flex-col items-center space-y-3">
           <Button 
-            onClick={handleDemoClick}
             className="bg-white text-[#293462] hover:bg-gray-100 px-8 py-3 text-lg font-medium border-0"
           >
             Demo
           </Button>
-          <p className="text-white text-sm opacity-80">(in development, launch mid July 2025)</p>
+          <p className="text-white text-sm opacity-80">(in development, launch mid October 2025)</p>
         </div>
       </div>
     </div>
