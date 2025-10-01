@@ -25,6 +25,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/post/:id" element={<Layout><Post /></Layout>} />
           <Route path="/profile" element={<Layout><Profile /></Layout>} />
+          <Route path="/profile/:userId" element={<Layout><Profile /></Layout>} />
           <Route path="/search" element={<Layout><Search /></Layout>} />
           <Route path="/new-post" element={<Layout><NewPost /></Layout>} />
           <Route path="/messages" element={<Layout><Messages /></Layout>} />

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, ExternalLink, ChevronLeft, ChevronDown, ChevronRight } from 'lucide-react';
 import Papa from 'papaparse';
 import { Button } from '@/components/ui/button';
@@ -166,7 +166,7 @@ const Post = () => {
         {/* Post content */}
         <article className="space-y-6">
           {/* User info and date */}
-          <div className="flex items-center space-x-3">
+          <Link to={`/profile/${post.post_user_id}`} className="flex items-center space-x-3 hover:opacity-80 transition-opacity w-fit">
             <Avatar className="h-12 w-12">
               <AvatarImage 
                 src={post.post_avatar || "https://sailorsahoy.com/icon_whitecircle.png"} 
@@ -180,7 +180,7 @@ const Post = () => {
               <h2 className="font-semibold text-foreground">{post.post_user}</h2>
               <p className="text-sm text-muted-foreground">{post.post_date}</p>
             </div>
-          </div>
+          </Link>
 
           {/* Post title */}
           <h1 className="text-2xl font-bold text-foreground leading-tight">
